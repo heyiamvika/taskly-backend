@@ -14,13 +14,22 @@ app.use(express.json());
 app.use(authorizaion);
 
 // MySQL config
-const connection = mysql.createConnection({
+var pool = mysql.createPool({
+	connectionLimit: 10,
 	host: process.env.DB_HOST,
 	user: process.env.DB_USER,
 	password: process.env.DB_PASS,
 	database: 'Taskly',
 	charset: 'utf8mb4_unicode_ci',
 });
+
+// const connection = mysql.createConnection({
+// 	host: process.env.DB_HOST,
+// 	user: process.env.DB_USER,
+// 	password: process.env.DB_PASS,
+// 	database: 'Taskly',
+// 	charset: 'utf8mb4_unicode_ci',
+// });
 
 // Joi schema for event
 const eventSchema = Joi.object({
@@ -104,14 +113,22 @@ app.delete('/api/events/:id', (req, res) => {
 });
 
 function sendRequest(SQLString, res) {
-	connection.connect(() => console.log('DB connected'));
-
-	connection.query(SQLString, function (error, results) {
-		if (error) return res.status(404).send(error);
-		else res.send(results);
+	pool.getConnection((err, connection) => {
+		connection.query(SQLString, (error, results) => {
+			if (error) res.status(404).send(error);
+			else res.send(results);
+			connection.release();
+		});
 	});
 
-	connection.end();
+	// connection.connect(() => console.log('DB connected'));
+
+	// connection.query(SQLString, function (error, results) {
+	// 	if (error) return res.status(404).send(error);
+	// 	else res.send(results);
+	// });
+
+	// connection.end();
 }
 
 const port = process.env.PORT || 3000;
