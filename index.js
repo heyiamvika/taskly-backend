@@ -114,6 +114,10 @@ app.delete('/api/events/:id', (req, res) => {
 
 function sendRequest(SQLString, res) {
 	pool.getConnection((err, connection) => {
+		if (err) {
+			throw err;
+		}
+
 		connection.query(SQLString, (error, results) => {
 			if (error) res.status(404).send(error);
 			else res.send(results);
