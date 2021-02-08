@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const authorizaion = require('./middleware/authorization');
 const express = require('express');
 var mysql = require('mysql');
 const uuid = require('uuid');
@@ -6,8 +7,11 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const app = express();
+
+// Express Middlewares
 // Middleware for parsing requests
 app.use(express.json());
+app.use(authorizaion);
 
 // MySQL config
 const connection = mysql.createConnection({
@@ -99,8 +103,6 @@ app.delete('/api/events/:id', (req, res) => {
 	);
 });
 
-app.listen(3000, console.log('Server started...'));
-
 function sendRequest(SQLString, res) {
 	connection.connect(() => console.log('DB connected'));
 
@@ -111,3 +113,6 @@ function sendRequest(SQLString, res) {
 
 	connection.end();
 }
+
+const port = process.env.PORT || 3000;
+app.listen(port, console.log(`Server started on port ${port}...`));
